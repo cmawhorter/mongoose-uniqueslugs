@@ -31,7 +31,7 @@ exports.enhanceSchema = function(schema, options)
   // unlike the usual "hope nobody else makes a slug while we're still saving" strategy
   schema.pre('save', function (next) {
     var self = this;
-    if (self.get('slug') === undefined)
+    if (typeof self.get(options.target) == 'undefined')
     {
       // Come up with a unique slug, even if the title is not unique
       var originalSlug = self.get(options.source);
