@@ -48,7 +48,7 @@ exports.enhanceSchema = function(schema, options)
           originalSlug = originalSlug.substr(0, originalSlug.length - 1);
         }
       }
-      self.set('slug', originalSlug);
+      self.set(options.target, originalSlug);
     }
     next();
   });
