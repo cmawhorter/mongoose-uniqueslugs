@@ -13,8 +13,18 @@ exports.enhanceSchema = function(schema, options)
 
   if (!options.addSlugManually)
   {
-    schema.add({ options.target: { type: String, unique: true } });
+    var slugDef = {};
+    slugDef[options.target] = { type: String, unique: true };
+    schema.add(slugDef);
   }
+
+  schema.method('slug', function() {
+    return this[options.target];
+  });
+
+  schema.method('_slugKey', function() {
+    return options.target;
+  });
 
   // "Wait, how does the slug become unique?" See enhanceModel below. We add digits to it
   // if and only if there is an actual error on save. This approach is concurrency safe
@@ -51,16 +61,17 @@ exports.enhanceModel = function(model)
   // Replace 'save' with a wrapper
   model.prototype.save = function(f)
   {
-    var self = this;
+    var self = this
+      , slugKey = self._slugKey();
     // Our replacement callback
     var extendSlugOnUniqueIndexError = function(err, d)
     {
       if (err)
       {
         // Spots unique index errors relating to the slug field
-        if ((err.code === 11000) && (err.err.indexOf('slug') !== -1))
+        if ((err.code === 11000) && (err.err.indexOf(slugKey) !== -1))
         {
-          self.slug += (Math.floor(Math.random() * 10)).toString();
+          self[slugKey] += (Math.floor(Math.random() * 10)).toString();
           // Necessary because otherwise Mongoose doesn't allow us to retry save(),
           // at least until https://github.com/punkave/mongoose/commit/ea37acc8bd216abec68033fe9e667afa5fd9764c
           // is in the mainstream release
