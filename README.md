@@ -13,7 +13,7 @@ wrapper that gets first crack at errors.
 
 2. Require the unique slug plugin
 
-      var mongooseUniqueSlugs = require('mongooseUniqueSlugs');
+      var mongooseUniqueSlugs = require('mongoose-uniqueslugs');
 
 3. Enhance the schema
 
