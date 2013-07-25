@@ -4,6 +4,7 @@ exports.enhanceSchema = function(schema, options)
   options = options || {};
 
   options.source = options.source || 'title';
+  options.target = options.target || 'slug';
   // Everything except letters and digits becomes a dash. All modern browsers are
   // fine with UTF8 characters in URLs. If you don't like this, pass your own regexp
   // to match disallowed characters
@@ -12,7 +13,7 @@ exports.enhanceSchema = function(schema, options)
 
   if (!options.addSlugManually)
   {
-    schema.add({ slug: { type: String, unique: true } });
+    schema.add({ options.target: { type: String, unique: true } });
   }
 
   // "Wait, how does the slug become unique?" See enhanceModel below. We add digits to it
