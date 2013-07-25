@@ -3,29 +3,17 @@ exports.enhanceSchema = function(schema, options)
 {
   options = options || {};
 
-  if (options.source === undefined)
-  {
-    options.source = 'title';
-  }
-
-  if (options.disallow === undefined)
-  {
-    // Everything except letters and digits becomes a dash. All modern browsers are
-    // fine with UTF8 characters in URLs. If you don't like this, pass your own regexp
-    // to match disallowed characters
-    options.disallow = /[^\w\d]+/g;
-  }
-
-  if (options.substitute === undefined)
-  {
-    options.substitute = '-';
-  }
+  options.source = options.source || 'title';
+  // Everything except letters and digits becomes a dash. All modern browsers are
+  // fine with UTF8 characters in URLs. If you don't like this, pass your own regexp
+  // to match disallowed characters
+  options.disallow = options.disallow || /[^\w\d]+/g;
+  options.substitute = options.substitute || '-';
 
   if (!options.addSlugManually)
   {
     schema.add({ slug: { type: String, unique: true } });
   }
-
 
   // "Wait, how does the slug become unique?" See enhanceModel below. We add digits to it
   // if and only if there is an actual error on save. This approach is concurrency safe
