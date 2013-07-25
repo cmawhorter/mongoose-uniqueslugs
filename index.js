@@ -1,6 +1,8 @@
 
 exports.enhanceSchema = function(schema, options)
 {
+  options = options || {};
+
   if (options.source === undefined)
   {
     options.source = 'title';
@@ -19,10 +21,10 @@ exports.enhanceSchema = function(schema, options)
     options.substitute = '-';
   }
 
-  if (!options.addSlugManually) 
+  if (!options.addSlugManually)
   {
     schema.add({ slug: { type: String, unique: true } });
-  }  
+  }
 
 
   // "Wait, how does the slug become unique?" See enhanceModel below. We add digits to it
@@ -64,8 +66,8 @@ exports.enhanceModel = function(model)
     // Our replacement callback
     var extendSlugOnUniqueIndexError = function(err, d)
     {
-      if (err) 
-      { 
+      if (err)
+      {
         // Spots unique index errors relating to the slug field
         if ((err.code === 11000) && (err.err.indexOf('slug') !== -1))
         {
