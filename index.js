@@ -1,6 +1,8 @@
 
 exports.enhanceSchema = function(schema, options)
 {
+  if (!schema || typeof schema.add == 'undefined') throw new Error('Invalid Schema');
+
   options = options || {};
 
   options.source = options.source || 'title';
@@ -17,9 +19,14 @@ exports.enhanceSchema = function(schema, options)
     slugDef[options.target] = { type: String, unique: true };
     schema.add(slugDef);
   }
-
-  schema.method('slug', function() {
-    return this[options.target];
+console.log(options);
+  // compile
+  var esc_sub = options.substitute.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') // regex escapes options.substitute
+    , re_trim = new RegExp('^('+esc_sub+')+|('+esc_sub+')+$', 'g'); // regex to remove leading/trailing occurences of options.substitute
+  schema.method('generateSlug', function() {
+    console.log('using', blah, options)
+    var source = this.get(options.source);
+    return source.toLowerCase().replace(options.disallow, options.substitute).replace(re_trim, '');
   });
 
   schema.method('_slugKey', function() {
@@ -30,32 +37,15 @@ exports.enhanceSchema = function(schema, options)
   // if and only if there is an actual error on save. This approach is concurrency safe
   // unlike the usual "hope nobody else makes a slug while we're still saving" strategy
   schema.pre('save', function (next) {
-    var self = this;
-    if (typeof self.get(options.target) == 'undefined')
-    {
-      // Come up with a unique slug, even if the title is not unique
-      var originalSlug = self.get(options.source);
-      originalSlug = originalSlug.toLowerCase().replace(options.disallow, options.substitute);
-      // Lop off leading and trailing -
-      if (originalSlug.length)
-      {
-        if (originalSlug.substr(0, 1) === options.substitute)
-        {
-          originalSlug = originalSlug.substr(1);
-        }
-        if (originalSlug.substr(originalSlug.length - 1, 1) === options.substitute)
-        {
-          originalSlug = originalSlug.substr(0, originalSlug.length - 1);
-        }
-      }
-      self.set(options.target, originalSlug);
-    }
+    this.set(options.target, this.generateSlug());
     next();
   });
 };
 
 exports.enhanceModel = function(model)
 {
+  if (!model || typeof model.prototype == 'undefined' || typeof model.prototype.save == 'undefined') throw new Error('Invalid Model');
+
   // Stash the original 'save' method so we can call it
   model.prototype.saveAfterExtendSlugOnUniqueIndexError = model.prototype.save;
   // Replace 'save' with a wrapper
